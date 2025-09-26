@@ -1,9 +1,8 @@
 # 📰 Wix Content Publishing System
 
 A high-performance content publishing system built with **Velo by Wix**.
-
-This system enables structured, scalable content workflows by centralizing content creation in a single **staging collection** and pushing optimized content to **lean live collections** — perfect for improving **Core Web Vitals** and page load speeds.
-
+This system enables structured, scalable content workflows by centralising content creation in a single **staging collection** and pushing optimised content to **lean live collections** — perfect for improving **Core Web Vitals** and page load speeds.
+I built this to optimise publishing while delivering a high-speed front end.
 
 
 ---
@@ -156,10 +155,10 @@ Using arrays like this as an example:
 
 ```
 
-####💡 How It’s Used
-		✅ This powers a visual "completeness" progress bar.
-		✅ It helps determine whether the “Push Live” button should be enabled/disabled.
-		✅ It supports dynamic field requirements based on contentType.	 
+*💡 How It’s Used *
+	✅ This powers a visual "completeness" progress bar.
+	✅ It helps determine whether the “Push Live” button should be enabled/disabled.
+	✅ It supports dynamic field requirements based on contentType.	 
 
 
 
