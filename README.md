@@ -21,7 +21,7 @@ I built this to optimise publishing while delivering a high-speed front end.
 
 ## 🧱 Folder Structure
 
-<pre> ```bash
+<pre>
 wix-content-publishing/
 ├── backend/
 │ └── content-pub/
@@ -31,7 +31,7 @@ wix-content-publishing/
 │ ├── howTo.js
 │ └── platform.js
 ├── README.md
-``` </pre>
+</pre>
 
 
 ## 🚀 How It Works
