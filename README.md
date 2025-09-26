@@ -21,7 +21,17 @@ I built this to optimise publishing while delivering a high-speed front end.
 
 ## 🧱 Folder Structure
 
-<pre> ```bash wix-content-publishing/ ├── backend/ │ └── content-pub/ │ ├── publisher.web.js │ ├── contentTypeConfigs.js │ ├── article.js │ ├── howTo.js │ └── platform.js ├── README.md ``` </pre>
+<pre> ```bash
+wix-content-publishing/
+├── backend/
+│ └── content-pub/
+│ ├── publisher.web.js
+│ ├── contentTypeConfigs.js
+│ ├── article.js
+│ ├── howTo.js
+│ └── platform.js
+├── README.md
+``` </pre>
 
 
 ## 🚀 How It Works
