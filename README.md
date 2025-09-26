@@ -1,0 +1,261 @@
+# 📰 Wix Content Publishing System
+
+A high-performance content publishing system built with **Velo by Wix**.
+
+This system enables structured, scalable content workflows by centralizing content creation in a single **staging collection** and pushing optimized content to **lean live collections** — perfect for improving **Core Web Vitals** and page load speeds.
+
+
+
+---
+
+## ⚙️ Features
+
+- ✅ Centralized **content staging**
+- ✅ Push to **live collections** via button click
+- ✅ Config-based support for multiple content types
+- ✅ Generates **front-end URLs** dynamically
+- ✅ Syncs a trimmed **LiteContent** collection for blazing-fast lists/cards
+- ✅ Supports **custom HTML blocks** (e.g. impact areas)
+- ✅ Designed for SEO, scalability, and performance
+
+---
+
+## 🧱 Folder Structure
+
+wix-content-publishing/
+│
+├── backend/
+│ └── content-pub/
+│ ├── publisher.web.js
+│ ├── contentTypeConfigs.js
+│ ├── article.js
+│ ├── howTo.js
+│ ├── platform.js
+│
+└── README.md
+
+
+## 🚀 How It Works
+
+1. **Authors** create content in a single staging collection (`blogStaging`)
+2. On button click (`Push Live`), the system:
+   - Pushes content to a target live collection (via config)
+   - Marks it `isLive`, sets `publishDate`, and links the items
+   - Writes back the generated front-end URL
+   - Syncs a **LiteContent** item for homepage/lists/cards
+3. Frontend pulls from `LiteContent` (not the full live collection) for performance
+
+---
+
+## 🧠 Supported Collections
+
+| Collection | Purpose |
+|-----------|---------|
+| `blogStaging` | Main draft/staging collection for all content types |
+| `Import703` / `HowTos` / `ToolsOrTechnology` | Live collections |
+| `liteContentList` | Trimmed version of live content for fast display |
+| `ContentType` | Reference for content types (used in configs) |
+| `Import957` | Reference for categories |
+| `impactArea` | Optional: used for custom block injection |
+
+---
+
+## 🧩 Example Usage (Frontend)
+This fiers the the backend code which syncs to your live collection
+
+```js
+
+import { publishOrUpdateContent } from 'backend/content-pub/publisher.web';
+
+$w('#pushLive').onClick(async () => {
+  const contentTypeId = $w('#blogStaging').getCurrentItem().contentType;
+  const stagingItemId = $w('#blogStaging').getCurrentItem()._id;
+
+  try {
+    await publishOrUpdateContent(stagingItemId, contentTypeId);
+    console.log("Published!");
+  } catch (err) {
+    console.error("Publishing failed:", err);
+  }
+});
+
+```
+
+### Optional: I added a check based on content type to enable the pushLive button when fields were complete:
+This function will enable disable the button.
+```js
+        if (populatedCount === totalRequired && !postData.isHidden) {
+            $w("#pushLive").enable();
+        } else {
+            $w("#pushLive").disable();
+        }
+```
+
+
+Using arrays like this as an example:
+
+```js
+      // array of fields which should have values before push live
+        const commonfields = [
+            "title",
+            "coverImage",
+            "featuredImage",
+            "ogImage",
+            "lede",
+            "meta",
+            "excerpt",
+            "slug",
+            "catSlug",
+            "author",
+            "body",
+            "mainCategory",
+            "timeToRead",
+            "contentType"
+        ];
+
+        // Additional fields for the platform content typle needed before push live
+        const platformfields = [
+            "impactArea1",
+            "prodName",
+            "productWebsite"
+        ];
+		
+		 let requiredFields = [...commonfields];
+		 
+		// If the postData has a contentType, and that contentType has mapped required fields,
+		// extend the requiredFields array with those type-specific fields.
+
+
+		if (postData.contentType && contentTypeFieldMap[postData.contentType]) {
+		requiredFields = requiredFields.concat(contentTypeFieldMap[postData.contentType]);
+		}
+
+		// Helper function: Check if all required fields are populated
+		function areFieldsPopulated(fields, data) {
+			return fields.every(field => data[field] && data[field] !== "");
+		}
+
+		// Helper function: Count how many required fields are populated
+		function countPopulatedFields(fields, data) {
+			return fields.filter(field => data[field] && data[field] !== "").length;
+		}
+
+		// === Calculate Publishing Readiness ===
+
+		// Total number of fields needed for publish
+		const totalRequired = requiredFields.length;
+
+		// How many of those are filled in
+		const populatedCount = countPopulatedFields(requiredFields, postData);
+
+		// Completion percentage
+		const progressPercentage = (populatedCount / totalRequired) * 100;
+
+		// Update the progress bar UI component
+		$w("#progressCompleteness").value = progressPercentage;
+
+```
+
+####💡 How It’s Used
+		✅ This powers a visual "completeness" progress bar.
+		✅ It helps determine whether the “Push Live” button should be enabled/disabled.
+		✅ It supports dynamic field requirements based on contentType.	 
+
+
+
+## 🛠️ Adding New Content Types
+
+1. Create a new live collection (e.g. CaseStudies)
+
+2. Create a mapper: backend/content-pub/caseStudy.js
+
+```js
+export function mapCaseStudyFields(productionItem = {}, sourceItem) {
+  return {
+    ...productionItem,
+    title: sourceItem.title,
+    slug: sourceItem.slug,
+    // Add more fields as needed
+  };
+}
+```
+
+3. Register it in contentTypeConfigs.js
+
+```js
+import { mapCaseStudyFields } from './caseStudy';
+
+export const contentTypeConfigs = {
+  "uuid-here": {
+    name: 'Case Study',
+    stagingCollection: 'blogStaging',
+    productionCollection: 'CaseStudies',
+    linkedIdField: 'linkedBlogId',
+    urlFieldKey: 'link-case-study-title',
+    mapper: mapCaseStudyFields
+  }
+};
+```
+
+
+## ⚡ LiteContent Strategy
+
+The liteContentList collection is used to render:
+- Home page carousels
+- Category lists
+- Related content
+- Search results
+
+It contains only the **most essential fields** (title, excerpt, category, image, etc.) and is synced automatically during publish.
+
+This improves load speed, SEO, and performance dramatically.
+Below is my lite collection as an example
+
+Field Name			Type			Purpose
+ID					System ID		Unique identifier (same as the staging/live item)
+Title				Text			The title of the content item
+Created date		System Date		Auto-generated by Wix
+Updated date		System Date		Auto-generated by Wix (optional)
+Owner				System User		Auto-generated (not typically used here)
+Catslug				Text			Slug for the main category
+Excerpt				Text			Short summary or preview text
+Main Cat label		Text			Human-readable label for the category (denormalized)
+Featured			Boolean			Used to flag special content (e.g. homepage highlight)
+Main Cat ID			Text			Category reference ID (can be used for filtering)
+Featured Image		Image			Main image used for card or list display
+Content Type Label	Text			Human-readable label for content type (e.g. Article)
+Live Relative URL	Text			Front-end URL (stripped of domain)
+Content Type ID		Text			Reference ID for the content type (used in config)
+
+💡 Notes:
+All fields are flat and denormalized for performance.
+Main Category ID and Content Type ID are stored as strings (not references) for speed.
+Live Relative URL is generated by removing the domain from the full URL during publishing.
+Featured is useful for home page sections, hero carousels, etc.
+
+
+## 🔐 Permissions
+
+The publish function is **restricted to Admin** roles:
+
+webMethod(Permissions.Admin, ...)
+
+
+You can modify this if using custom permissions.
+
+## 📄 License & Contribution
+
+MIT License — free to use, adapt, and build on.
+
+⚠️ This repo is **provided as-is** for technical Wix developers.
+I’m not actively maintaining support, but contributions and forks are welcome!
+
+🎥 Demo & Docs
+
+🔗 GitHub: https://github.com/MCTO-the-dig/wix-content-publishing
+
+📹 Walkthrough Video: https://youtu.be/-fLchTllHe4
+
+🙌 Credits
+
+Created by MCTO-the-dig
